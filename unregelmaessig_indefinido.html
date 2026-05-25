@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kahoot Quiz – Pretérito indefinido</title>
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial, sans-serif;
+background:linear-gradient(135deg,#46178f,#6a1b9a,#8e24aa);
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+color:white;
+}
+
+.container{
+width:100%;
+max-width:950px;
+background:rgba(255,255,255,0.08);
+backdrop-filter:blur(10px);
+border-radius:25px;
+padding:30px;
+box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+h1{
+text-align:center;
+margin-bottom:20px;
+font-size:2.3rem;
+}
+
+.question-box{
+background:white;
+color:#222;
+padding:30px;
+border-radius:20px;
+margin-bottom:25px;
+font-size:1.8rem;
+font-weight:bold;
+text-align:center;
+min-height:140px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.answers{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:18px;
+}
+
+.answer-btn{
+padding:22px;
+border:none;
+border-radius:18px;
+font-size:1.3rem;
+font-weight:bold;
+color:white;
+cursor:pointer;
+transition:0.2s;
+min-height:100px;
+}
+
+.answer-btn:hover{
+transform:scale(1.03);
+opacity:0.92;
+}
+
+.red{background:#e53935;}
+.blue{background:#1e88e5;}
+.yellow{background:#fbc02d;color:#222;}
+.green{background:#43a047;}
+
+.correct{
+background:#00c853 !important;
+color:white !important;
+}
+
+.wrong{
+background:#d50000 !important;
+}
+
+.bottom{
+margin-top:25px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+font-size:1.2rem;
+font-weight:bold;
+}
+
+#feedback{
+text-align:center;
+font-size:2rem;
+margin-top:20px;
+font-weight:bold;
+}
+
+.next-btn{
+margin-top:25px;
+width:100%;
+padding:18px;
+border:none;
+border-radius:15px;
+font-size:1.2rem;
+font-weight:bold;
+background:white;
+color:#46178f;
+cursor:pointer;
+display:none;
+}
+
+.next-btn:hover{
+background:#f3e5f5;
+}
+
+.final-screen{
+text-align:center;
+display:none;
+}
+
+.final-screen h2{
+font-size:3rem;
+margin-bottom:25px;
+}
+
+.final-screen p{
+font-size:2rem;
+margin-bottom:20px;
+}
+
+.restart-btn{
+padding:18px 30px;
+border:none;
+border-radius:15px;
+font-size:1.3rem;
+font-weight:bold;
+background:#00c853;
+color:white;
+cursor:pointer;
+}
+
+@media(max-width:700px){
+.answers{
+grid-template-columns:1fr;
+}
+
+.question-box{
+font-size:1.4rem;
+}
+
+.answer-btn{
+font-size:1.1rem;
+min-height:80px;
+}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>🎯 Pretérito indefinido – Verbos irregulares</h1>
+
+<div id="quiz-area">
+
+<div class="question-box" id="question"></div>
+
+<div class="answers" id="answers"></div>
+
+<div id="feedback"></div>
+
+<button class="next-btn" id="nextBtn" onclick="nextQuestion()">➡ Weiter</button>
+
+<div class="bottom">
+<div id="counter"></div>
+<div id="score"></div>
+</div>
+
+</div>
+
+<div class="final-screen" id="finalScreen">
+<h2>🎉 Quiz beendet!</h2>
+<p id="finalText"></p>
+<button class="restart-btn" onclick="restartQuiz()">🔄 Nochmal spielen</button>
+</div>
+
+</div>
+
+<script>
+const questions = [
+{q:"Yo ____ ayer al cine. (ir)", a:["fui","iba","ido","iré"], c:0},
+{q:"Él ____ la tarea. (hacer)", a:["hizo","hacía","hace","hará"], c:0},
+{q:"Nosotros ____ la verdad. (decir)", a:["dijimos","decimos","decíamos","diríamos"], c:0},
+{q:"Tú ____ mucho ayer. (tener)", a:["tuviste","tenías","tienes","tendrás"], c:0},
+{q:"Ellos ____ tarde. (venir)", a:["vinieron","vienen","venían","vendrán"], c:0},
+{q:"Yo ____ todo. (saber)", a:["supe","sé","sabía","sabré"], c:0},
+{q:"Ella ____ la puerta. (poner)", a:["puso","pone","ponía","pondrá"], c:0},
+{q:"Nosotros ____ al mar. (ir)", a:["fuimos","vamos","íbamos","iremos"], c:0},
+{q:"Yo ____ un regalo. (dar)", a:["di","doy","daba","daré"], c:0},
+{q:"Él ____ feliz. (estar)", a:["estuvo","está","estaba","estará"], c:0},
+{q:"Yo ____ la verdad. (decir)", a:["dije","digo","decía","diré"], c:0},
+{q:"Tú ____ mucho. (hacer)", a:["hiciste","haces","hacías","harás"], c:0},
+{q:"Ellos ____ el coche. (tener)", a:["tuvieron","tienen","tenían","tendrán"], c:0},
+{q:"Yo ____ a Juan. (ver)", a:["vi","veo","veía","veré"], c:0},
+{q:"Nosotros ____ tarde. (venir)", a:["vinimos","venimos","veníamos","vendremos"], c:0},
+{q:"Ella ____ lo que pasó. (saber)", a:["supo","sabe","sabía","sabrá"], c:0},
+{q:"Yo ____ un café. (poner)", a:["puse","pongo","ponía","pondré"], c:0},
+{q:"Tú ____ muy amable. (estar)", a:["estuviste","estás","estabas","estarás"], c:0},
+{q:"Ellos ____ la verdad. (decir)", a:["dijeron","dicen","decían","dirán"], c:0},
+{q:"Yo ____ en casa. (ir)", a:["fui","voy","iba","iré"], c:0},
+{q:"Nosotros ____ mucho. (hacer)", a:["hicimos","hacemos","hacíamos","haremos"], c:0},
+{q:"Ella ____ todo. (tener)", a:["tuvo","tiene","tenía","tendrá"], c:0},
+{q:"Yo ____ el libro. (leer)", a:["leí","leo","leía","leeré"], c:0},
+{q:"Ellos ____ al profesor. (ver)", a:["vieron","ven","veían","verán"], c:0},
+{q:"Tú ____ la respuesta. (saber)", a:["supiste","sabes","sabías","sabrás"], c:0}
+];
+
+let current = 0;
+let score = 0;
+
+const colors = ["red","blue","yellow","green"];
+
+function loadQuestion(){
+const q = questions[current];
+
+document.getElementById("question").innerText = q.q;
+document.getElementById("counter").innerText = `Frage ${current+1} / ${questions.length}`;
+document.getElementById("score").innerText = `⭐ Punkte: ${score}`;
+document.getElementById("feedback").innerText = "";
+document.getElementById("nextBtn").style.display = "none";
+
+const answersDiv = document.getElementById("answers");
+answersDiv.innerHTML = "";
+
+q.a.forEach((answer,index)=>{
+const btn = document.createElement("button");
+btn.classList.add("answer-btn", colors[index]);
+btn.innerText = answer;
+btn.onclick = ()=>checkAnswer(index);
+answersDiv.appendChild(btn);
+});
+}
+
+function checkAnswer(selected){
+const q = questions[current];
+const buttons = document.querySelectorAll(".answer-btn");
+
+buttons.forEach((btn,index)=>{
+btn.disabled = true;
+
+if(index === q.c){
+btn.classList.add("correct");
+}
+
+if(index === selected && index !== q.c){
+btn.classList.add("wrong");
+}
+});
+
+if(selected === q.c){
+score++;
+document.getElementById("feedback").innerText = "✅ Richtig!";
+}else{
+document.getElementById("feedback").innerText = "❌ Falsch!";
+}
+
+document.getElementById("score").innerText = `⭐ Punkte: ${score}`;
+document.getElementById("nextBtn").style.display = "block";
+}
+
+function nextQuestion(){
+current++;
+
+if(current < questions.length){
+loadQuestion();
+}else{
+showFinalScreen();
+}
+}
+
+function showFinalScreen(){
+document.getElementById("quiz-area").style.display = "none";
+document.getElementById("finalScreen").style.display = "block";
+
+document.getElementById("finalText").innerText = `Du hast ${score} von ${questions.length} Punkten erreicht!`;
+}
+
+function restartQuiz(){
+current = 0;
+score = 0;
+
+document.getElementById("quiz-area").style.display = "block";
+document.getElementById("finalScreen").style.display = "none";
+
+loadQuestion();
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
